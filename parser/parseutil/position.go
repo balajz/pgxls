@@ -116,13 +116,15 @@ func getJoinCondition(nw *NodeWalker) SyntaxPosition {
 	}
 	return JoinClause
 }
+
 func getJoinOnCondition(nw *NodeWalker) SyntaxPosition {
 	switch {
 	case nw.CurNodeIs(genTokenMatcher([]token.Kind{token.Period})):
 		return ColName
 	case nw.CurNodeIs(genTokenMatcher([]token.Kind{token.Whitespace})):
 		if !nw.PrevNodesIs(true, astutil.NodeMatcher{
-			ExpectTokens: []token.Kind{token.Eq}}) {
+			ExpectTokens: []token.Kind{token.Eq},
+		}) {
 			return JoinOn
 		}
 	}

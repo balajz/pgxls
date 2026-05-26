@@ -251,7 +251,6 @@ func TestParseFunction(t *testing.T) {
 			tt.checkFn(t, stmts, tt.input)
 		})
 	}
-
 }
 
 func TestParsePeriod_Double(t *testing.T) {
@@ -650,7 +649,6 @@ func TestParseOperator(t *testing.T) {
 				testStatement(t, stmts[0], 1, input)
 				list := stmts[0].GetTokens()
 				testOperator(t, list[0], input, "foo", "+", "100")
-
 			},
 		},
 		{

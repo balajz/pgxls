@@ -145,6 +145,7 @@ func TestExtractTableFactor(t *testing.T) {
 		})
 	}
 }
+
 func TestExtractWhereCondition(t *testing.T) {
 	testcases := []struct {
 		name  string

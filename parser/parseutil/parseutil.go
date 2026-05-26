@@ -258,7 +258,8 @@ func isFollowedByOn(parsed ast.TokenList, pos token.Pos) bool {
 	for _, n := range nw.Paths {
 		if n.PeekNodeIs(true,
 			astutil.NodeMatcher{
-				NodeTypes: []ast.NodeType{ast.TypeAliased}}) {
+				NodeTypes: []ast.NodeType{ast.TypeAliased},
+			}) {
 			if !n.NextNode(true) {
 				continue
 			}
@@ -268,7 +269,8 @@ func isFollowedByOn(parsed ast.TokenList, pos token.Pos) bool {
 				continue
 			}
 			if n.PeekNodeIs(true, astutil.NodeMatcher{
-				NodeTypes: []ast.NodeType{ast.TypeComparison}}) {
+				NodeTypes: []ast.NodeType{ast.TypeComparison},
+			}) {
 				return true
 			}
 		}

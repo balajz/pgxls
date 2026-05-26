@@ -146,6 +146,7 @@ var parenthesisPrefixMatcher = astutil.NodeMatcher{
 		token.LParen,
 	},
 }
+
 var parenthesisCloseMatcher = astutil.NodeMatcher{
 	ExpectTokens: []token.Kind{
 		token.RParen,
@@ -196,6 +197,7 @@ var functionPrefixMatcher = astutil.NodeMatcher{
 		dialect.Unmatched,
 	},
 }
+
 var functionArgsMatcher = astutil.NodeMatcher{
 	NodeTypes: []ast.NodeType{ast.TypeParenthesis},
 }
@@ -216,6 +218,7 @@ var memberIdentifierInfixMatcher = astutil.NodeMatcher{
 		token.Period,
 	},
 }
+
 var memberIdentifierTargetMatcher = astutil.NodeMatcher{
 	ExpectTokens: []token.Kind{
 		token.Mult,
@@ -318,6 +321,7 @@ var operatorInfixMatcher = astutil.NodeMatcher{
 		token.Caret,
 	},
 }
+
 var operatorTargetMatcher = astutil.NodeMatcher{
 	NodeTypes: []ast.NodeType{
 		ast.TypeIdentifier,
@@ -394,6 +398,7 @@ var comparisonInfixMatcher = astutil.NodeMatcher{
 		"IS",
 	},
 }
+
 var comparisonTargetMatcher = astutil.NodeMatcher{
 	NodeTypes: []ast.NodeType{
 		ast.TypeParenthesis,
@@ -555,11 +560,13 @@ var commentInfixMatcher = astutil.NodeMatcher{
 		token.MultilineComment,
 	},
 }
+
 var identifierListInfixMatcher = astutil.NodeMatcher{
 	ExpectTokens: []token.Kind{
 		token.Comma,
 	},
 }
+
 var identifierListTargetMatcher = astutil.NodeMatcher{
 	ExpectTokens: []token.Kind{
 		token.Number,
@@ -677,6 +684,7 @@ var switchCaseOpenMatcher = astutil.NodeMatcher{
 		"CASE",
 	},
 }
+
 var switchCaseCloseMatcher = astutil.NodeMatcher{
 	ExpectKeyword: []string{
 		"END",

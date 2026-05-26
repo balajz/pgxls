@@ -81,6 +81,7 @@ type ItemWith struct {
 func (iw *ItemWith) String() string {
 	return joinString(iw.Toks)
 }
+
 func (iw *ItemWith) Render(opts *RenderOptions) string {
 	return joinRender(iw.Toks, opts)
 }
@@ -98,6 +99,7 @@ type MultiKeyword struct {
 func (mk *MultiKeyword) String() string {
 	return joinString(mk.Toks)
 }
+
 func (mk *MultiKeyword) Render(opts *RenderOptions) string {
 	// Render keywords with spaces between them
 	var parts []string
@@ -152,6 +154,7 @@ func (mi *MemberIdentifier) String() string {
 	}
 	return strings.Join(strs, "")
 }
+
 func (mi *MemberIdentifier) Render(opts *RenderOptions) string {
 	var strs []string
 	for _, t := range mi.Toks {
@@ -171,6 +174,7 @@ func (mi *MemberIdentifier) setParent(node Node) {
 		mi.ParentTok = tok.GetToken()
 	}
 }
+
 func (mi *MemberIdentifier) setChild(node Node) {
 	mi.Child = node
 	tok, ok := node.(Token)
@@ -178,24 +182,28 @@ func (mi *MemberIdentifier) setChild(node Node) {
 		mi.ChildTok = tok.GetToken()
 	}
 }
+
 func (mi *MemberIdentifier) GetParent() Node {
 	if mi.Parent == nil {
 		return &Null{}
 	}
 	return mi.Parent
 }
+
 func (mi *MemberIdentifier) GetParentIdent() *Identifier {
 	if mi.ParentIdent == nil {
 		return &Identifier{}
 	}
 	return mi.ParentIdent
 }
+
 func (mi *MemberIdentifier) GetChild() Node {
 	if mi.Child == nil {
 		return &Null{}
 	}
 	return mi.Child
 }
+
 func (mi *MemberIdentifier) GetChildIdent() *Identifier {
 	if mi.ChildIdent == nil {
 		return &Identifier{}
@@ -218,6 +226,7 @@ func (a *Aliased) String() string {
 	}
 	return strings.Join(strs, "")
 }
+
 func (a *Aliased) Render(opts *RenderOptions) string {
 	var strs []string
 	for _, t := range a.Toks {
@@ -266,6 +275,7 @@ type Operator struct {
 func (o *Operator) String() string {
 	return joinString(o.Toks)
 }
+
 func (o *Operator) Render(opts *RenderOptions) string {
 	return joinRender(o.Toks, opts)
 }
@@ -280,12 +290,14 @@ func (o *Operator) GetLeft() Node {
 	}
 	return o.Left
 }
+
 func (o *Operator) GetOperator() Node {
 	if o.Operator == nil {
 		return &Null{}
 	}
 	return o.Operator
 }
+
 func (o *Operator) GetRight() Node {
 	if o.Right == nil {
 		return &Null{}
@@ -303,6 +315,7 @@ type Comparison struct {
 func (c *Comparison) String() string {
 	return joinString(c.Toks)
 }
+
 func (c *Comparison) Render(opts *RenderOptions) string {
 	return joinRender(c.Toks, opts)
 }
@@ -317,12 +330,14 @@ func (c *Comparison) GetLeft() Node {
 	}
 	return c.Left
 }
+
 func (c *Comparison) GetComparison() Node {
 	if c.Comparison == nil {
 		return &Null{}
 	}
 	return c.Comparison
 }
+
 func (c *Comparison) GetRight() Node {
 	if c.Right == nil {
 		return &Null{}
@@ -337,6 +352,7 @@ type Parenthesis struct {
 func (p *Parenthesis) String() string {
 	return joinString(p.Toks)
 }
+
 func (p *Parenthesis) Render(opts *RenderOptions) string {
 	return joinRender(p.Toks, opts)
 }
@@ -360,6 +376,7 @@ type ParenthesisInner struct {
 func (p *ParenthesisInner) String() string {
 	return joinString(p.Toks)
 }
+
 func (p *ParenthesisInner) Render(opts *RenderOptions) string {
 	return joinRender(p.Toks, opts)
 }
@@ -376,6 +393,7 @@ type FunctionLiteral struct {
 func (fl *FunctionLiteral) String() string {
 	return joinString(fl.Toks)
 }
+
 func (fl *FunctionLiteral) Render(opts *RenderOptions) string {
 	return joinRender(fl.Toks, opts)
 }
@@ -392,6 +410,7 @@ type Query struct {
 func (q *Query) String() string {
 	return joinString(q.Toks)
 }
+
 func (q *Query) Render(opts *RenderOptions) string {
 	return joinRender(q.Toks, opts)
 }
@@ -408,6 +427,7 @@ type Statement struct {
 func (s *Statement) String() string {
 	return joinString(s.Toks)
 }
+
 func (s *Statement) Render(opts *RenderOptions) string {
 	return joinRender(s.Toks, opts)
 }
@@ -426,6 +446,7 @@ type IdentifierList struct {
 func (il *IdentifierList) String() string {
 	return joinString(il.Toks)
 }
+
 func (il *IdentifierList) Render(opts *RenderOptions) string {
 	return joinRender(il.Toks, opts)
 }
@@ -462,6 +483,7 @@ type SwitchCase struct {
 func (sc *SwitchCase) String() string {
 	return joinString(sc.Toks)
 }
+
 func (sc *SwitchCase) Render(opts *RenderOptions) string {
 	return joinRender(sc.Toks, opts)
 }

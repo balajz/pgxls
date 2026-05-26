@@ -8,8 +8,7 @@ type Dialect interface {
 	IsPlaceHolderPart(r rune) bool
 }
 
-type GenericSQLDialect struct {
-}
+type GenericSQLDialect struct{}
 
 func (*GenericSQLDialect) IsIdentifierStart(r rune) bool {
 	return (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || r == '@'
