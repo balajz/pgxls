@@ -1,20 +1,20 @@
-package completer
+package engine
 
 import (
 	"fmt"
 	"strings"
 
-	"github.com/sqls-server/sqls/internal/database"
-	"github.com/sqls-server/sqls/internal/lsp"
 	"github.com/sqls-server/sqls/parser/parseutil"
+	"github.com/sqls-server/sqls/pkg/database"
+	"github.com/sqls-server/sqls/pkg/types"
 )
 
-func (c *Completer) keywordCandidates(lower bool, keywords []string) []lsp.CompletionItem {
-	candidates := []lsp.CompletionItem{}
+func (c *Completer) keywordCandidates(lower bool, keywords []string) []types.CompletionItem {
+	candidates := []types.CompletionItem{}
 	for _, k := range keywords {
-		candidate := lsp.CompletionItem{
+		candidate := types.CompletionItem{
 			Label:  k,
-			Kind:   lsp.KeywordCompletion,
+			Kind:   types.KeywordCompletion,
 			Detail: "keyword",
 		}
 		if lower {
@@ -25,12 +25,12 @@ func (c *Completer) keywordCandidates(lower bool, keywords []string) []lsp.Compl
 	return candidates
 }
 
-func (c *Completer) functionCandidates(lower bool, keywords []string) []lsp.CompletionItem {
-	candidates := []lsp.CompletionItem{}
+func (c *Completer) functionCandidates(lower bool, keywords []string) []types.CompletionItem {
+	candidates := []types.CompletionItem{}
 	for _, k := range keywords {
-		candidate := lsp.CompletionItem{
+		candidate := types.CompletionItem{
 			Label:  k,
-			Kind:   lsp.FunctionCompletion,
+			Kind:   types.FunctionCompletion,
 			Detail: "Function",
 		}
 		if lower {
@@ -41,8 +41,8 @@ func (c *Completer) functionCandidates(lower bool, keywords []string) []lsp.Comp
 	return candidates
 }
 
-func (c *Completer) columnCandidates(targetTables []*parseutil.TableInfo, parent *completionParent) []lsp.CompletionItem {
-	candidates := []lsp.CompletionItem{}
+func (c *Completer) columnCandidates(targetTables []*parseutil.TableInfo, parent *completionParent) []types.CompletionItem {
+	candidates := []types.CompletionItem{}
 
 	switch parent.Type {
 	case ParentTypeNone:
@@ -80,15 +80,15 @@ func (c *Completer) columnCandidates(targetTables []*parseutil.TableInfo, parent
 	return candidates
 }
 
-func generateColumnCandidates(tableName string, columns []*database.ColumnDesc) []lsp.CompletionItem {
-	candidates := []lsp.CompletionItem{}
+func generateColumnCandidates(tableName string, columns []*database.ColumnDesc) []types.CompletionItem {
+	candidates := []types.CompletionItem{}
 	for _, column := range columns {
-		candidate := lsp.CompletionItem{
+		candidate := types.CompletionItem{
 			Label:  column.Name,
-			Kind:   lsp.FieldCompletion,
+			Kind:   types.FieldCompletion,
 			Detail: columnDetail(tableName),
-			Documentation: &lsp.MarkupContent{
-				Kind:  lsp.Markdown,
+			Documentation: &types.MarkupContent{
+				Kind:  types.Markdown,
 				Value: database.ColumnDoc(tableName, column),
 			},
 		}
@@ -108,8 +108,8 @@ func columnDetail(tableName string) string {
 	return detail
 }
 
-func (c *Completer) ReferencedTableCandidates(targetTables []*parseutil.TableInfo) []lsp.CompletionItem {
-	candidates := []lsp.CompletionItem{}
+func (c *Completer) ReferencedTableCandidates(targetTables []*parseutil.TableInfo) []types.CompletionItem {
+	candidates := []types.CompletionItem{}
 
 	for _, targetTable := range targetTables {
 		includeTables := []*parseutil.TableInfo{}
@@ -124,8 +124,8 @@ func (c *Completer) ReferencedTableCandidates(targetTables []*parseutil.TableInf
 	return candidates
 }
 
-func (c *Completer) TableCandidates(parent *completionParent, targetTables []*parseutil.TableInfo) []lsp.CompletionItem {
-	candidates := []lsp.CompletionItem{}
+func (c *Completer) TableCandidates(parent *completionParent, targetTables []*parseutil.TableInfo) []types.CompletionItem {
+	candidates := []types.CompletionItem{}
 
 	switch parent.Type {
 	case ParentTypeNone:
@@ -158,8 +158,9 @@ func (c *Completer) TableCandidates(parent *completionParent, targetTables []*pa
 
 func (c *Completer) joinCandidates(lastTable *parseutil.TableInfo,
 	targetTables, allTables []*parseutil.TableInfo,
-	joinOn, lowercaseKeywords bool) []lsp.CompletionItem {
-	var candidates []lsp.CompletionItem
+	joinOn, lowercaseKeywords bool,
+) []types.CompletionItem {
+	var candidates []types.CompletionItem
 	if len(c.DBCache.ForeignKeys) == 0 {
 		return candidates
 	}
@@ -231,7 +232,8 @@ func resolveTables(t *parseutil.TableInfo, cache *database.DBCache) []*parseutil
 }
 
 func generateTableAlias(target string,
-	aliases map[string]interface{}) string {
+	aliases map[string]interface{},
+) string {
 	ch := []rune(target)[0]
 	i := 1
 	var rv string
@@ -250,7 +252,8 @@ func generateForeignKeyCandidate(target string,
 	tMap map[string]*parseutil.TableInfo,
 	aliases map[string]interface{},
 	fk *database.ForeignKey,
-	joinOn, lowercaseKeywords bool) lsp.CompletionItem {
+	joinOn, lowercaseKeywords bool,
+) types.CompletionItem {
 	var tAlias string
 	if joinOn {
 		tAlias = tMap[target].Alias
@@ -310,27 +313,27 @@ func generateForeignKeyCandidate(target string,
 		}
 	}
 	builder[1].sb.WriteString("$0")
-	return lsp.CompletionItem{
+	return types.CompletionItem{
 		Label:            builder[0].sb.String(),
-		Kind:             lsp.SnippetCompletion,
+		Kind:             types.SnippetCompletion,
 		Detail:           "Join generator for foreign key",
 		InsertText:       builder[1].sb.String(),
-		InsertTextFormat: lsp.SnippetTextFormat,
+		InsertTextFormat: types.SnippetTextFormat,
 	}
 }
 
-func generateTableCandidates(tables []string, dbCache *database.DBCache) []lsp.CompletionItem {
-	candidates := []lsp.CompletionItem{}
+func generateTableCandidates(tables []string, dbCache *database.DBCache) []types.CompletionItem {
+	candidates := []types.CompletionItem{}
 	for _, tableName := range tables {
-		candidate := lsp.CompletionItem{
+		candidate := types.CompletionItem{
 			Label:  tableName,
-			Kind:   lsp.ClassCompletion,
+			Kind:   types.ClassCompletion,
 			Detail: "table",
 		}
 		cols, ok := dbCache.ColumnDescs(tableName)
 		if ok {
-			candidate.Documentation = &lsp.MarkupContent{
-				Kind:  lsp.Markdown,
+			candidate.Documentation = &types.MarkupContent{
+				Kind:  types.Markdown,
 				Value: database.TableDoc(tableName, cols),
 			}
 		}
@@ -339,8 +342,8 @@ func generateTableCandidates(tables []string, dbCache *database.DBCache) []lsp.C
 	return candidates
 }
 
-func generateTableCandidatesByInfos(tables []*parseutil.TableInfo, dbCache *database.DBCache) []lsp.CompletionItem {
-	candidates := []lsp.CompletionItem{}
+func generateTableCandidatesByInfos(tables []*parseutil.TableInfo, dbCache *database.DBCache) []types.CompletionItem {
+	candidates := []types.CompletionItem{}
 	for _, table := range tables {
 		name := table.Name
 		detail := "referenced table"
@@ -348,15 +351,15 @@ func generateTableCandidatesByInfos(tables []*parseutil.TableInfo, dbCache *data
 			name = table.Alias
 			detail = "aliased table"
 		}
-		candidate := lsp.CompletionItem{
+		candidate := types.CompletionItem{
 			Label:  name,
-			Kind:   lsp.ClassCompletion,
+			Kind:   types.ClassCompletion,
 			Detail: detail,
 		}
 		cols, ok := dbCache.ColumnDescs(table.Name)
 		if ok {
-			candidate.Documentation = &lsp.MarkupContent{
-				Kind:  lsp.Markdown,
+			candidate.Documentation = &types.MarkupContent{
+				Kind:  types.Markdown,
 				Value: database.TableDoc(table.Name, cols),
 			}
 		}
@@ -365,15 +368,15 @@ func generateTableCandidatesByInfos(tables []*parseutil.TableInfo, dbCache *data
 	return candidates
 }
 
-func (c *Completer) SubQueryCandidates(infos []*parseutil.SubQueryInfo) []lsp.CompletionItem {
-	candidates := []lsp.CompletionItem{}
+func (c *Completer) SubQueryCandidates(infos []*parseutil.SubQueryInfo) []types.CompletionItem {
+	candidates := []types.CompletionItem{}
 	for _, info := range infos {
-		candidate := lsp.CompletionItem{
+		candidate := types.CompletionItem{
 			Label:  info.Name,
-			Kind:   lsp.FieldCompletion,
+			Kind:   types.FieldCompletion,
 			Detail: "subquery",
-			Documentation: &lsp.MarkupContent{
-				Kind:  lsp.Markdown,
+			Documentation: &types.MarkupContent{
+				Kind:  types.Markdown,
 				Value: database.SubqueryDoc(info.Name, info.Views, c.DBCache),
 			},
 		}
@@ -382,8 +385,8 @@ func (c *Completer) SubQueryCandidates(infos []*parseutil.SubQueryInfo) []lsp.Co
 	return candidates
 }
 
-func (c *Completer) SubQueryColumnCandidates(infos []*parseutil.SubQueryInfo) []lsp.CompletionItem {
-	candidates := []lsp.CompletionItem{}
+func (c *Completer) SubQueryColumnCandidates(infos []*parseutil.SubQueryInfo) []types.CompletionItem {
+	candidates := []types.CompletionItem{}
 	for _, info := range infos {
 		for _, view := range info.Views {
 			for _, col := range view.SubQueryColumns {
@@ -393,24 +396,24 @@ func (c *Completer) SubQueryColumnCandidates(infos []*parseutil.SubQueryInfo) []
 						continue
 					}
 					for _, tableCol := range tableCols {
-						candidate := lsp.CompletionItem{
+						candidate := types.CompletionItem{
 							Label:  tableCol.Name,
-							Kind:   lsp.FieldCompletion,
+							Kind:   types.FieldCompletion,
 							Detail: subQueryColumnDetail(info.Name),
-							Documentation: &lsp.MarkupContent{
-								Kind:  lsp.Markdown,
+							Documentation: &types.MarkupContent{
+								Kind:  types.Markdown,
 								Value: database.SubqueryColumnDoc(tableCol.Name, info.Views, c.DBCache),
 							},
 						}
 						candidates = append(candidates, candidate)
 					}
 				} else {
-					candidate := lsp.CompletionItem{
+					candidate := types.CompletionItem{
 						Label:  col.DisplayName(),
-						Kind:   lsp.FieldCompletion,
+						Kind:   types.FieldCompletion,
 						Detail: subQueryColumnDetail(info.Name),
-						Documentation: &lsp.MarkupContent{
-							Kind:  lsp.Markdown,
+						Documentation: &types.MarkupContent{
+							Kind:  types.Markdown,
 							Value: database.SubqueryColumnDoc(col.DisplayName(), info.Views, c.DBCache),
 						},
 					}
@@ -433,13 +436,13 @@ func subQueryColumnDetail(subQueryAliasName string) string {
 	return detail
 }
 
-func (c *Completer) SchemaCandidates() []lsp.CompletionItem {
-	candidates := []lsp.CompletionItem{}
+func (c *Completer) SchemaCandidates() []types.CompletionItem {
+	candidates := []types.CompletionItem{}
 	dbs := c.DBCache.SortedSchemas()
 	for _, db := range dbs {
-		candidate := lsp.CompletionItem{
+		candidate := types.CompletionItem{
 			Label:  db,
-			Kind:   lsp.ModuleCompletion,
+			Kind:   types.ModuleCompletion,
 			Detail: "schema",
 		}
 		candidates = append(candidates, candidate)

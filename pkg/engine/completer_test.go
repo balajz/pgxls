@@ -1,10 +1,10 @@
-package completer
+package engine
 
 import (
 	"reflect"
 	"testing"
 
-	"github.com/sqls-server/sqls/internal/lsp"
+	"github.com/sqls-server/sqls/pkg/types"
 )
 
 func TestGetBeforeCursorText(t *testing.T) {
@@ -66,8 +66,7 @@ FROM
 }
 
 func Test_completionTypeIs(t *testing.T) {
-	type args struct {
-	}
+	type args struct{}
 	tests := []struct {
 		name            string
 		completionTypes []completionType
@@ -115,15 +114,15 @@ func TestComplete(t *testing.T) {
 		name      string
 		text      string
 		lowerCase bool
-		expected  []lsp.CompletionItem
+		expected  []types.CompletionItem
 	}{
 		{
 			name: "keyword",
 			text: "sel",
-			expected: []lsp.CompletionItem{
+			expected: []types.CompletionItem{
 				{
 					Label:    "SELECT",
-					Kind:     lsp.KeywordCompletion,
+					Kind:     types.KeywordCompletion,
 					Detail:   "keyword",
 					SortText: "9999SELECT",
 				},
@@ -133,10 +132,10 @@ func TestComplete(t *testing.T) {
 			name:      "keyword-lowercase",
 			text:      "sel",
 			lowerCase: true,
-			expected: []lsp.CompletionItem{
+			expected: []types.CompletionItem{
 				{
 					Label:    "select",
-					Kind:     lsp.KeywordCompletion,
+					Kind:     types.KeywordCompletion,
 					Detail:   "keyword",
 					SortText: "9999select",
 				},
@@ -145,16 +144,9 @@ func TestComplete(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run("", func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			c := NewCompleter(nil)
-			got, err := c.Complete("sel", lsp.CompletionParams{
-				TextDocumentPositionParams: lsp.TextDocumentPositionParams{
-					Position: lsp.Position{
-						Line:      0,
-						Character: len(tt.text),
-					},
-				},
-			}, tt.lowerCase)
+			got, err := c.Complete("sel", 0, len(tt.text), tt.lowerCase)
 			if err != nil {
 				t.Fatal(err)
 			}
