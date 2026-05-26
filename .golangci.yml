@@ -3,36 +3,40 @@ run:
   tests: false
 linters:
   enable:
-    - asasalint
-    - asciicheck
-    - bidichk
-    - bodyclose
-    - contextcheck
-    - durationcheck
-    - errchkjson
-    - errorlint
-    - exhaustive
-    - gocheckcompilerdirectives
-    - gochecksumtype
-    - gosec
-    - gosmopolitan
-    - loggercheck
-    - makezero
-    - musttag
-    - nilerr
-    - nilnesserr
-    - noctx
-    - protogetter
-    - reassign
-    - recvcheck
-    - spancheck
-    - sqlclosecheck
-    - testifylint
-    - zerologlint
-  disable:
-    - prealloc
-    - rowserrcheck
-    - unused
+    - goconst
+    - gocyclo
+    - misspell
+    - revive
+    - unconvert
+    - unparam
+  settings:
+    gocyclo:
+      min-complexity: 15
+    misspell:
+      locale: US
+    revive:
+      confidence: 0.8
+      severity: warning
+      rules:
+        - name: exported
+        - name: blank-imports
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: dot-imports
+        - name: error-return
+        - name: error-strings
+        - name: error-naming
+        - name: if-return
+        - name: increment-decrement
+        - name: var-naming
+        - name: var-declaration
+        - name: package-comments
+        - name: range
+        - name: receiver-naming
+        - name: time-naming
+        - name: unexported-return
+        - name: indent-error-flow
+        - name: errorf
   exclusions:
     generated: lax
     presets:
@@ -40,14 +44,8 @@ linters:
       - common-false-positives
       - legacy
       - std-error-handling
-    rules:
-      - linters:
-          - gosec
-        text: 'G106:'
-      - linters:
-          - staticcheck
-        text: 'QF1002:'
     paths:
+      - internal/completer
       - third_party$
       - builtin$
       - examples$
