@@ -1,31 +1,22 @@
-# sqls: SQL Language Server
+# pgxls: PostgreSQL Language Server
 
-![test](https://github.com/sqls-server/sqls/workflows/test/badge.svg)
-
-An implementation of the Language Server Protocol for SQL.
+An implementation of the Language Server Protocol for PostgreSQL.
 
 ## Note
 
-This project is currently under development and there is no stable release. Therefore, destructive interface changes and configuration changes are expected.
+This project is a fork of [sqls](https://github.com/sqls-server/sqls), refactored to be exclusively PostgreSQL-specific.
 
 ## Features
 
-sqls aims to provide advanced intelligence for you to edit sql in your own editor.
+pgxls aims to provide advanced intelligence for you to edit PostgreSQL SQL in your own editor.
 
 ### Support RDBMS
 
-- MySQL([Go-MySQL-Driver](https://github.com/go-sql-driver/mysql))
 - PostgreSQL([pgx](https://github.com/jackc/pgx))
-- SQLite3([go-sqlite3](https://github.com/mattn/go-sqlite3))
-- MSSQL([go-mssqldb](https://github.com/denisenkom/go-mssqldb))
-- H2([pgx](https://github.com/CodinGame/h2go))
-- Vertica([vertica-sql-go](https://github.com/vertica/vertica-sql-go))
 
 ### Language Server Features
 
 #### Auto Completion
-
-![completion](./imgs/sqls-completion.gif)
 
 - DML(Data Manipulation Language)
     - [x] SELECT
@@ -38,13 +29,9 @@ sqls aims to provide advanced intelligence for you to edit sql in your own edito
     - [ ] ALTER TABLE
 
 #### Join completion
-If the tables are connected with a foreign key sqls can complete ```JOIN``` statements
-
-![join_completion](imgs/sqls-fk_joins.gif)
+If the tables are connected with a foreign key pgxls can complete ```JOIN``` statements
 
 #### CodeAction
-
-![code_actions](https://github.com/sqls-server/sqls.vim/blob/master/imgs/sqls_vim_demo.gif)
 
 - [x] Execute SQL
 - [ ] Explain SQL
@@ -53,15 +40,9 @@ If the tables are connected with a foreign key sqls can complete ```JOIN``` stat
 
 #### Hover
 
-![hover](./imgs/sqls_hover.gif)
-
 #### Signature Help
 
-![signature_help](./imgs/sqls_signature_help.gif)
-
 #### Document Formatting
-
-![document_format](./imgs/sqls_document_format.gif)
 
 ## Installation
 
@@ -78,13 +59,9 @@ go install github.com/sqls-server/sqls@latest
 
 ## DB Configuration
 
-The connection to the RDBMS is essential to take advantage of the functionality provided by `sqls`.
-You need to set the connection to the RDBMS.
+The connection to the PostgreSQL is essential to take advantage of the functionality provided by `pgxls`.
 
 ### Configuration Methods
-
-There are the following methods for RDBMS connection settings, and they are prioritized in order from the top.
-Whichever method you choose, the settings you make will remain the same.
 
 1. Configuration file specified by the `-config` flag
 1. `workspace/configuration` set to LSP client
@@ -97,101 +74,26 @@ Whichever method you choose, the settings you make will remain the same.
 # Set to true to use lowercase keywords instead of uppercase.
 lowercaseKeywords: false
 connections:
-  - alias: dsn_mysql
-    driver: mysql
-    dataSourceName: root:root@tcp(127.0.0.1:13306)/world
-  - alias: individual_mysql
-    driver: mysql
-    proto: tcp
-    user: root
-    passwd: root
+  - alias: local_postgres
+    driver: postgresql
+    user: postgres
+    passwd: mysecretpassword1234
     host: 127.0.0.1
-    port: 13306
-    dbName: world
+    port: 5432
+    dbName: dvdrental
     params:
-      autocommit: "true"
-      tls: skip-verify
-  - alias: mysql_via_ssh
-    driver: mysql
-    proto: tcp
-    user: admin
-    passwd: Q+ACgv12ABx/
-    host: 192.168.121.163
-    port: 3306
-    dbName: world
-    sshConfig:
-      host: 192.168.121.168
-      port: 22
-      user: sshuser
-      passPhrase: ssspass
-      privateKey: /home/sqls-server/.ssh/id_rsa
-  - alias: dsn_vertica
-    driver: vertica
-    dataSourceName: vertica://user:pass@host:5433/dbname
+      sslmode: disable
 ```
 
 ### Workspace configuration Sample
 
-- setting example with vim-lsp.
-
-```vim
-if executable('sqls')
-    augroup LspSqls
-        autocmd!
-        autocmd User lsp_setup call lsp#register_server({
-        \   'name': 'sqls',
-        \   'cmd': {server_info->['sqls']},
-        \   'whitelist': ['sql'],
-        \   'workspace_config': {
-        \     'sqls': {
-        \       'connections': [
-        \         {
-        \           'driver': 'mysql',
-        \           'dataSourceName': 'root:root@tcp(127.0.0.1:13306)/world',
-        \         },
-        \         {
-        \           'driver': 'postgresql',
-        \           'dataSourceName': 'host=127.0.0.1 port=15432 user=postgres password=mysecretpassword1234 dbname=dvdrental sslmode=disable',
-        \         },
-        \       ],
-        \     },
-        \   },
-        \ })
-    augroup END
-endif
-```
-
-- setting example with coc.nvim.
-
-In `coc-settings.json` opened by `:CocConfig`
-
-```json
-{
-    "languageserver": {
-        "sql": {
-            "command": "sqls",
-            "args": ["-config", "$HOME/.config/sqls/config.yml"],
-            "filetypes": ["sql"],
-            "shell": true
-        }
-    }
-}
-```
-
-- setting example with [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#sqls).
+- setting example with nvim-lspconfig.
 
 ```lua
 require'lspconfig'.sqls.setup{
-  on_attach = function(client, bufnr)
-    require('sqls').on_attach(client, bufnr) -- require sqls.nvim
-  end
   settings = {
     sqls = {
       connections = {
-        {
-          driver = 'mysql',
-          dataSourceName = 'root:root@tcp(127.0.0.1:13306)/world',
-        },
         {
           driver = 'postgresql',
           dataSourceName = 'host=127.0.0.1 port=15432 user=postgres password=mysecretpassword1234 dbname=dvdrental sslmode=disable',
@@ -202,85 +104,13 @@ require'lspconfig'.sqls.setup{
 }
 ```
 
-- Setting example for Sublime Text 4
-
-  Install the LSP Client by Opening the command palette and run ```Package Control: Install Package```, then select ```LSP```.
-
-  Open ```Preferences > Package Settings > LSP > Settings``` and add the ```"sqls"``` client configuration to the ```"clients"```:
-```
-{
-    "show_diagnostics_count_in_view_status": true,
-    "clients": {
-        "sqls": {
-            "enabled": true,
-            "command": ["/path/to/sqls binary"],
-            "selector": "source.sql"
-        }
-    }
-}
-```
-
-**I'm sorry. Please wait a little longer for other editor settings.**
-
-### Configuration Parameters
-
-The first setting in `connections` is the default connection.
-
-| Key         | Description          |
-| ----------- | -------------------- |
-| connections | Database connections |
-
-### connections
-
-`dataSourceName` takes precedence over the value set in `proto`, `user`, `passwd`, `host`, `port`, `dbName`, `params`.
-
-| Key            | Description                                 |
-| -------------- | ------------------------------------------- |
-| alias          | Connection alias name. Optional.            |
-| driver         | `mysql`, `postgresql`, `sqlite3`, `mssql`, `h2`. Required. |
-| dataSourceName | Data source name.                           |
-| proto          | `tcp`, `udp`, `unix`.                       |
-| user           | User name                                   |
-| passwd         | Password                                    |
-| host           | Host                                        |
-| port           | Port                                        |
-| path           | unix socket path                            |
-| dbName         | Database name                               |
-| params         | Option params. Optional.                    |
-| sshConfig      | ssh config. Optional.                       |
-
-#### sshConfig
-
-| Key        | Description                 |
-| ---------- | --------------------------- |
-| host       | ssh host. Required.         |
-| port       | ssh port. Required.         |
-| user       | ssh user. Optional.         |
-| privateKey | private key path. Required. |
-| passPhrase | passPhrase. Optional.       |
-
-#### DSN (Data Source Name)
-
-See also.
-
-- <https://github.com/go-sql-driver/mysql#dsn-data-source-name>
-- <https://pkg.go.dev/github.com/jackc/pgx/v4>
-- <https://github.com/mattn/go-sqlite3#connection-string>
-
 ## Contributors
 
-This project exists thanks to all the people who contribute.
-<a href="https://github.com/sqls-server/sqls/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=sqls-server/sqls" />
-</a>
+This project exists thanks to all the people who contribute to the original `sqls` project.
 
 ## Inspired
 
 I created sqls inspired by the following OSS.
 
 - [dbcli Tools](https://github.com/dbcli)
-    - [mycli](https://www.mycli.net/)
     - [pgcli](https://www.pgcli.com/)
-    - [litecli](https://litecli.com/)
-- non-validating SQL parser
-    - [sqlparse](https://github.com/andialbrecht/sqlparse)

@@ -91,7 +91,7 @@ func IsFileExist(fPath string) bool {
 
 func configFilePath(fileName string) string {
 	if xdgConfigHome := os.Getenv("XDG_CONFIG_HOME"); xdgConfigHome != "" {
-		return filepath.Join(xdgConfigHome, "sqls", fileName)
+		return filepath.Join(xdgConfigHome, "pgxls", fileName)
 	}
 
 	var configDir string
@@ -109,7 +109,7 @@ func configFilePath(fileName string) string {
 		}
 	}
 
-	return filepath.Join(configDir, "sqls", fileName)
+	return filepath.Join(configDir, "pgxls", fileName)
 }
 
 func expand(path string) (string, error) {

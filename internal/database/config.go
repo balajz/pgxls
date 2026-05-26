@@ -39,13 +39,7 @@ func (c *DBConfig) Validate() error {
 	}
 
 	switch c.Driver {
-	case
-		dialect.DatabaseDriverMySQL,
-		dialect.DatabaseDriverMySQL8,
-		dialect.DatabaseDriverMySQL57,
-		dialect.DatabaseDriverMySQL56,
-		dialect.DatabaseDriverPostgreSQL,
-		dialect.DatabaseDriverVertica:
+	case dialect.DatabaseDriverPostgreSQL:
 		if c.DataSourceName == "" && c.Proto == "" {
 			return errors.New("required: connections[].dataSourceName or connections[].proto")
 		}
@@ -70,73 +64,6 @@ func (c *DBConfig) Validate() error {
 				return c.SSHCfg.Validate()
 			}
 		}
-	case dialect.DatabaseDriverSQLite3:
-	case dialect.DatabaseDriverH2:
-		if c.DataSourceName == "" {
-			return errors.New("required: connections[].dataSourceName")
-		}
-	case dialect.DatabaseDriverMssql:
-		if c.DataSourceName == "" && c.Proto == "" {
-			return errors.New("required: connections[].dataSourceName or connections[].proto")
-		}
-		if c.DataSourceName == "" && c.Proto != "" {
-			if c.User == "" {
-				return errors.New("required: connections[].user")
-			}
-			switch c.Proto {
-			case ProtoTCP:
-				if c.Host == "" {
-					return errors.New("required: connections[].host")
-				}
-			case ProtoUDP, ProtoUnix, ProtoHTTP:
-			default:
-				return errors.New("invalid: connections[].proto")
-			}
-		}
-	case dialect.DatabaseDriverOracle:
-		if c.DataSourceName == "" && c.Proto == "" {
-			return errors.New("required: connections[].dataSourceName or connections[].proto")
-		}
-		if c.DataSourceName == "" {
-			if c.User == "" {
-				return errors.New("required: connections[].user")
-			}
-			if c.Passwd == "" {
-				return errors.New("required: connections[].Passwd")
-			}
-			if c.Host == "" {
-				return errors.New("required: connections[].Host")
-			}
-			if c.Port <= 0 {
-				return errors.New("required: connections[].Port")
-			}
-			if c.DBName == "" {
-				return errors.New("required: connections[].DBName")
-			}
-		}
-	case dialect.DatabaseDriverClickhouse:
-		if c.DataSourceName == "" && c.Proto == "" {
-			return errors.New("required: connections[].dataSourceName or connections[].proto")
-		}
-
-		if c.DataSourceName == "" && c.Proto != "" {
-			if c.User == "" {
-				return errors.New("required: connections[].user")
-			}
-			switch c.Proto {
-			case ProtoTCP, ProtoHTTP:
-				if c.Host == "" {
-					return errors.New("required: connections[].host")
-				}
-			case ProtoUDP, ProtoUnix:
-			default:
-				return errors.New("invalid: connections[].proto")
-			}
-			if c.SSHCfg != nil {
-				return c.SSHCfg.Validate()
-			}
-		}
-
 	default:
 		return errors.New("invalid: connections[].driver")
 	}

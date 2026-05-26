@@ -1,4 +1,4 @@
-BIN := sqls
+BIN := pgxls
 ifeq ($(OS),Windows_NT)
 BIN := $(BIN).exe
 endif

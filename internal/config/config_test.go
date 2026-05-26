@@ -29,22 +29,6 @@ func TestGetConfig(t *testing.T) {
 				LowercaseKeywords: true,
 				Connections: []*database.DBConfig{
 					{
-						Alias:  "sqls_mysql",
-						Driver: "mysql",
-						Proto:  "tcp",
-						User:   "root",
-						Passwd: "root",
-						Host:   "127.0.0.1",
-						Port:   13306,
-						DBName: "world",
-						Params: map[string]string{"autocommit": "true", "tls": "skip-verify"},
-					},
-					{
-						Alias:          "sqls_sqlite3",
-						Driver:         "sqlite3",
-						DataSourceName: "file:/home/sqls-server/chinook.db",
-					},
-					{
 						Alias:  "sqls_postgresql",
 						Driver: "postgresql",
 						Proto:  "tcp",
@@ -54,23 +38,6 @@ func TestGetConfig(t *testing.T) {
 						Port:   15432,
 						DBName: "dvdrental",
 						Params: map[string]string{"sslmode": "disable"},
-					},
-					{
-						Alias:  "mysql_with_bastion",
-						Driver: "mysql",
-						Proto:  "tcp",
-						User:   "admin",
-						Passwd: "Q+ACgv12ABx/",
-						Host:   "192.168.121.163",
-						Port:   3306,
-						DBName: "world",
-						SSHCfg: &database.SSHConfig{
-							Host:       "192.168.121.168",
-							Port:       22,
-							User:       "vagrant",
-							PassPhrase: "passphrase1234",
-							PrivateKey: "/home/sqls-server/.ssh/id_rsa",
-						},
 					},
 				},
 			},
@@ -122,23 +89,6 @@ func TestGetConfig(t *testing.T) {
 			errMsg:  "failed validation, required: connections[].path",
 		},
 		{
-			name: "no dsn",
-			args: args{
-				fp: "no_dsn.yml",
-			},
-			want: &Config{
-				Connections: []*database.DBConfig{
-					{
-						Alias:          "sqls_sqlite3",
-						Driver:         "sqlite3",
-						DataSourceName: "",
-					},
-				},
-			},
-			wantErr: true,
-			errMsg:  "failed validation, required: connections[].dataSourceName",
-		},
-		{
 			name: "no ssh host",
 			args: args{
 				fp: "no_ssh_host.yml",
@@ -162,23 +112,6 @@ func TestGetConfig(t *testing.T) {
 				fp: "no_ssh_private_key.yml",
 			},
 			want:    nil,
-			wantErr: true,
-			errMsg:  "failed validation, required: connections[].sshConfig.privateKey",
-		},
-		{
-			name: "oracle config",
-			args: args{
-				fp: "oracle.yaml",
-			},
-			want: &Config{
-				Connections: []*database.DBConfig{
-					{
-						Alias:          "TestDB",
-						Driver:         "oracle",
-						DataSourceName: "SYSTEM/P1ssword@localhost:1521/XE",
-					},
-				},
-			},
 			wantErr: true,
 			errMsg:  "failed validation, required: connections[].sshConfig.privateKey",
 		},

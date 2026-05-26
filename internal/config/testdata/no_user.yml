@@ -1,7 +1,7 @@
 lowercaseKeywords: true
 connections:
   - alias: sqls_mysql
-    driver: mysql
+    driver: postgresql
     dataSourceName: ""
     proto: tcp
     user: ""

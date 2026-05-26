@@ -17,7 +17,7 @@ import (
 	"github.com/sqls-server/sqls/internal/handler"
 )
 
-const name = "sqls"
+const name = "pgxls"
 
 const version = "0.2.47"
 
@@ -35,7 +35,7 @@ func realMain() error {
 	app := &cli.App{
 		Name:    name,
 		Version: fmt.Sprintf("Version:%s, Revision:%s\n", version, revision),
-		Usage:   "An implementation of the Language Server Protocol for SQL.",
+		Usage:   "An implementation of the Language Server Protocol for PostgreSQL.",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "log",

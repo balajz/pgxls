@@ -1,6 +1,6 @@
 connections:
   - alias: mysql_with_bastion
-    driver: mysql
+    driver: postgresql
     dataSourceName: ""
     proto: tcp
     user: admin
