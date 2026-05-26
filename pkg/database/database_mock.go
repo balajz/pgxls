@@ -43,7 +43,6 @@ func NewMockDBRepository(_ *sql.DB) DBRepository {
 			res = append(res, dummyCountryColumns...)
 			res = append(res, dummyCountryLanguageColumns...)
 			return res, nil
-
 		},
 		MockDescribeDatabaseTableBySchema: func(ctx context.Context, schemaName string) ([]*ColumnDesc, error) {
 			var res []*ColumnDesc
@@ -51,7 +50,6 @@ func NewMockDBRepository(_ *sql.DB) DBRepository {
 			res = append(res, dummyCountryColumns...)
 			res = append(res, dummyCountryLanguageColumns...)
 			return res, nil
-
 		},
 		MockExec: func(ctx context.Context, query string) (sql.Result, error) {
 			return &MockResult{
@@ -123,6 +121,7 @@ var dummyDatabases = []string{
 	"sys",
 	"world",
 }
+
 var dummyDatabaseTables = map[string][]string{
 	"world": {
 		"city",
@@ -130,11 +129,13 @@ var dummyDatabaseTables = map[string][]string{
 		"countrylanguage",
 	},
 }
+
 var dummyTables = []string{
 	"city",
 	"country",
 	"countrylanguage",
 }
+
 var dummyCityColumns = []*ColumnDesc{
 	{
 		ColumnBase: ColumnBase{
@@ -212,6 +213,7 @@ var dummyCityColumns = []*ColumnDesc{
 		Extra: "",
 	},
 }
+
 var dummyCountryColumns = []*ColumnDesc{
 	{
 		ColumnBase: ColumnBase{
@@ -439,6 +441,7 @@ var dummyCountryColumns = []*ColumnDesc{
 		Extra: "",
 	},
 }
+
 var dummyCountryLanguageColumns = []*ColumnDesc{
 	{
 		ColumnBase: ColumnBase{
@@ -541,6 +544,7 @@ type MockResult struct {
 func (m *MockResult) LastInsertId() (int64, error) {
 	return m.MockLastInsertID()
 }
+
 func (m *MockResult) RowsAffected() (int64, error) {
 	return m.MockRowsAffected()
 }

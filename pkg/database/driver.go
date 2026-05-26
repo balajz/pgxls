@@ -8,11 +8,15 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-var driverOpeners = make(map[dialect.DatabaseDriver]Opener)
-var driverFactories = make(map[dialect.DatabaseDriver]Factory)
+var (
+	driverOpeners   = make(map[dialect.DatabaseDriver]Opener)
+	driverFactories = make(map[dialect.DatabaseDriver]Factory)
+)
 
-type Opener func(*DBConfig) (*DBConnection, error)
-type Factory func(*sql.DB) DBRepository
+type (
+	Opener  func(*DBConfig) (*DBConnection, error)
+	Factory func(*sql.DB) DBRepository
+)
 
 type DBConnection struct {
 	Conn    *sql.DB

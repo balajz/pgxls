@@ -12,9 +12,7 @@ import (
 	"github.com/sqls-server/sqls/parser/parseutil"
 )
 
-var (
-	ErrNotImplementation error = errors.New("not implementation")
-)
+var ErrNotImplementation error = errors.New("not implementation")
 
 const (
 	DefaultMaxIdleConns = 10
