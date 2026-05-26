@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/sqls-server/sqls/ast"
-	"github.com/sqls-server/sqls/token"
+	"github.com/balajz/pgxls/ast"
+	"github.com/balajz/pgxls/token"
 )
 
 func TestParseStatement(t *testing.T) {

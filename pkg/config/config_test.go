@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/balajz/pgxls/pkg/database"
 	"github.com/google/go-cmp/cmp"
-	"github.com/sqls-server/sqls/pkg/database"
 )
 
 func TestGetConfig(t *testing.T) {

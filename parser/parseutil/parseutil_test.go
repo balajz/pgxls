@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/balajz/pgxls/ast"
+	"github.com/balajz/pgxls/ast/astutil"
+	"github.com/balajz/pgxls/parser"
+	"github.com/balajz/pgxls/token"
 	"github.com/google/go-cmp/cmp"
-	"github.com/sqls-server/sqls/ast"
-	"github.com/sqls-server/sqls/ast/astutil"
-	"github.com/sqls-server/sqls/parser"
-	"github.com/sqls-server/sqls/token"
 )
 
 func Test_extractFocusedStatement(t *testing.T) {

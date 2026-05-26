@@ -11,9 +11,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/balajz/pgxls/dialect"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/stdlib"
-	"github.com/sqls-server/sqls/dialect"
 	"golang.org/x/crypto/ssh"
 )
 

@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/sqls-server/sqls/pkg/database"
+	"github.com/balajz/pgxls/pkg/database"
 	"gopkg.in/yaml.v2"
 )
 

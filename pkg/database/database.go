@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/sqls-server/sqls/dialect"
-	"github.com/sqls-server/sqls/parser/parseutil"
+	"github.com/balajz/pgxls/dialect"
+	"github.com/balajz/pgxls/parser/parseutil"
 )
 
 var ErrNotImplementation error = errors.New("not implementation")

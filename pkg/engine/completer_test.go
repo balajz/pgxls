@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/sqls-server/sqls/pkg/types"
+	"github.com/balajz/pgxls/pkg/types"
 )
 
 func TestGetBeforeCursorText(t *testing.T) {

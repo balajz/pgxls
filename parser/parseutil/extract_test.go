@@ -3,7 +3,7 @@ package parseutil
 import (
 	"testing"
 
-	"github.com/sqls-server/sqls/token"
+	"github.com/balajz/pgxls/token"
 )
 
 func TestExtractSelectExpr(t *testing.T) {

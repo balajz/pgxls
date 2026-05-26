@@ -3,8 +3,8 @@ package ast
 import (
 	"strings"
 
-	"github.com/sqls-server/sqls/dialect"
-	"github.com/sqls-server/sqls/token"
+	"github.com/balajz/pgxls/dialect"
+	"github.com/balajz/pgxls/token"
 )
 
 type NodeType int

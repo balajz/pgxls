@@ -8,10 +8,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/sqls-server/sqls/ast"
-	"github.com/sqls-server/sqls/parser"
-	"github.com/sqls-server/sqls/pkg/config"
-	"github.com/sqls-server/sqls/pkg/types"
+	"github.com/balajz/pgxls/ast"
+	"github.com/balajz/pgxls/parser"
+	"github.com/balajz/pgxls/pkg/config"
+	"github.com/balajz/pgxls/pkg/types"
 )
 
 func TestEval(t *testing.T) {

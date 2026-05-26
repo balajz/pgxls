@@ -4,12 +4,12 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/sqls-server/sqls/ast"
-	"github.com/sqls-server/sqls/ast/astutil"
-	"github.com/sqls-server/sqls/parser"
-	"github.com/sqls-server/sqls/pkg/config"
-	"github.com/sqls-server/sqls/pkg/types"
-	"github.com/sqls-server/sqls/token"
+	"github.com/balajz/pgxls/ast"
+	"github.com/balajz/pgxls/ast/astutil"
+	"github.com/balajz/pgxls/parser"
+	"github.com/balajz/pgxls/pkg/config"
+	"github.com/balajz/pgxls/pkg/types"
+	"github.com/balajz/pgxls/token"
 )
 
 func Format(text string, params types.DocumentFormattingParams, cfg *config.Config) ([]types.TextEdit, error) {

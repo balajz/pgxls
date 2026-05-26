@@ -8,14 +8,14 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/sqls-server/sqls/ast"
-	"github.com/sqls-server/sqls/ast/astutil"
-	"github.com/sqls-server/sqls/dialect"
-	"github.com/sqls-server/sqls/parser"
-	"github.com/sqls-server/sqls/parser/parseutil"
-	"github.com/sqls-server/sqls/pkg/database"
-	"github.com/sqls-server/sqls/pkg/types"
-	"github.com/sqls-server/sqls/token"
+	"github.com/balajz/pgxls/ast"
+	"github.com/balajz/pgxls/ast/astutil"
+	"github.com/balajz/pgxls/dialect"
+	"github.com/balajz/pgxls/parser"
+	"github.com/balajz/pgxls/parser/parseutil"
+	"github.com/balajz/pgxls/pkg/database"
+	"github.com/balajz/pgxls/pkg/types"
+	"github.com/balajz/pgxls/token"
 )
 
 type completionType int

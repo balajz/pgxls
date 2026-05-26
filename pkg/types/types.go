@@ -1,8 +1,8 @@
 package types
 
 import (
-	"github.com/sqls-server/sqls/pkg/config"
-	"github.com/sqls-server/sqls/pkg/database"
+	"github.com/balajz/pgxls/pkg/config"
+	"github.com/balajz/pgxls/pkg/database"
 )
 
 // https://microsoft.github.io/language-server-protocol/specifications/specification-3-14/#initialize

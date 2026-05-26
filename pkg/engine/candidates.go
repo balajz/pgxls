@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/sqls-server/sqls/parser/parseutil"
-	"github.com/sqls-server/sqls/pkg/database"
-	"github.com/sqls-server/sqls/pkg/types"
+	"github.com/balajz/pgxls/parser/parseutil"
+	"github.com/balajz/pgxls/pkg/database"
+	"github.com/balajz/pgxls/pkg/types"
 )
 
 func (c *Completer) keywordCandidates(lower bool, keywords []string) []types.CompletionItem {

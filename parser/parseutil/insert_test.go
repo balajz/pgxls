@@ -3,8 +3,8 @@ package parseutil
 import (
 	"testing"
 
+	"github.com/balajz/pgxls/token"
 	"github.com/google/go-cmp/cmp"
-	"github.com/sqls-server/sqls/token"
 )
 
 func TestExtractInsert(t *testing.T) {
