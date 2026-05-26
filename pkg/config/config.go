@@ -8,17 +8,13 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/sqls-server/sqls/internal/database"
+	"github.com/sqls-server/sqls/pkg/database"
 	"gopkg.in/yaml.v2"
 )
 
-var (
-	ErrNotFoundConfig = errors.New("NotFound Config")
-)
+var ErrNotFoundConfig = errors.New("NotFound Config")
 
-var (
-	YamlConfigPath = configFilePath("config.yml")
-)
+var YamlConfigPath = configFilePath("config.yml")
 
 type Config struct {
 	LowercaseKeywords bool                 `json:"lowercaseKeywords" yaml:"lowercaseKeywords"`
@@ -63,7 +59,7 @@ func (c *Config) Load(fp string) error {
 		return ErrNotFoundConfig
 	}
 
-	file, err := os.OpenFile(fp, os.O_RDONLY, 0666)
+	file, err := os.OpenFile(fp, os.O_RDONLY, 0o666)
 	if err != nil {
 		return fmt.Errorf("cannot open config, %w", err)
 	}

@@ -1,4 +1,5 @@
 connections:
-  - alias: sqls_sqlite3
+  - alias: pgxls_postgresql
     driver: postgresql
     dataSourceName: ""
+    proto: ""

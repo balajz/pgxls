@@ -1,12 +1,12 @@
 connections:
-  - alias: sqls_mysql
+  - alias: pgxls_postgresql
     driver: postgresql
     dataSourceName: ""
-    proto: unix
+    proto: invalid
     user: root
     passwd: root
-    host: ""
-    port: 0
+    host: 127.0.0.1
+    port: 13306
     path: ""
     dbName: world
     params:

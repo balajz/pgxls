@@ -1,5 +1,4 @@
 connections:
-  - alias: sqls_mysql
+  - alias: pgxls_postgresql
     driver: postgresql
     dataSourceName: ""
-    proto: ""

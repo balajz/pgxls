@@ -1,13 +1,12 @@
-lowercaseKeywords: true
 connections:
-  - alias: sqls_mysql
+  - alias: pgxls_postgresql
     driver: postgresql
     dataSourceName: ""
-    proto: tcp
-    user: ""
+    proto: unix
+    user: root
     passwd: root
-    host: 127.0.0.1
-    port: 13306
+    host: ""
+    port: 0
     path: ""
     dbName: world
     params:
