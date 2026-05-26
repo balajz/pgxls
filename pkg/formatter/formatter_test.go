@@ -9,16 +9,16 @@ import (
 	"testing"
 
 	"github.com/sqls-server/sqls/ast"
-	"github.com/sqls-server/sqls/internal/config"
-	"github.com/sqls-server/sqls/internal/lsp"
 	"github.com/sqls-server/sqls/parser"
+	"github.com/sqls-server/sqls/pkg/config"
+	"github.com/sqls-server/sqls/pkg/types"
 )
 
 func TestEval(t *testing.T) {
 	testcases := []struct {
 		name     string
 		input    string
-		params   lsp.DocumentFormattingParams
+		params   types.DocumentFormattingParams
 		config   *config.Config
 		expected string
 	}{
@@ -26,7 +26,7 @@ func TestEval(t *testing.T) {
 			name:     "InsertIntoFormat",
 			input:    "INSERT INTO users (NAME, email) VALUES ('john doe', 'example@host.com')",
 			expected: "INSERT INTO users(\n\tNAME,\n\temail\n)\nVALUES(\n\t'john doe',\n\t'example@host.com'\n)",
-			params:   lsp.DocumentFormattingParams{},
+			params:   types.DocumentFormattingParams{},
 			config: &config.Config{
 				LowercaseKeywords: false,
 			},

@@ -2,6 +2,7 @@ package formatter
 
 import (
 	"fmt"
+
 	"github.com/sqls-server/sqls/ast"
 	"github.com/sqls-server/sqls/parser"
 )

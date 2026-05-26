@@ -6,13 +6,13 @@ import (
 
 	"github.com/sqls-server/sqls/ast"
 	"github.com/sqls-server/sqls/ast/astutil"
-	"github.com/sqls-server/sqls/internal/config"
-	"github.com/sqls-server/sqls/internal/lsp"
 	"github.com/sqls-server/sqls/parser"
+	"github.com/sqls-server/sqls/pkg/config"
+	"github.com/sqls-server/sqls/pkg/types"
 	"github.com/sqls-server/sqls/token"
 )
 
-func Format(text string, params lsp.DocumentFormattingParams, cfg *config.Config) ([]lsp.TextEdit, error) {
+func Format(text string, params types.DocumentFormattingParams, cfg *config.Config) ([]types.TextEdit, error) {
 	if text == "" {
 		return nil, errors.New("empty")
 	}
@@ -21,11 +21,11 @@ func Format(text string, params lsp.DocumentFormattingParams, cfg *config.Config
 		return nil, err
 	}
 
-	st := lsp.Position{
+	st := types.Position{
 		Line:      parsed.Pos().Line,
 		Character: parsed.Pos().Col,
 	}
-	en := lsp.Position{
+	en := types.Position{
 		Line:      parsed.End().Line,
 		Character: parsed.End().Col,
 	}
@@ -37,9 +37,9 @@ func Format(text string, params lsp.DocumentFormattingParams, cfg *config.Config
 	opts := &ast.RenderOptions{
 		LowerCase: cfg.LowercaseKeywords,
 	}
-	res := []lsp.TextEdit{
+	res := []types.TextEdit{
 		{
-			Range: lsp.Range{
+			Range: types.Range{
 				Start: st,
 				End:   en,
 			},
@@ -49,10 +49,42 @@ func Format(text string, params lsp.DocumentFormattingParams, cfg *config.Config
 	return res, nil
 }
 
+// FormatSQL is a high-level helper to prettify a SQL string.
+func FormatSQL(sqlStr string, lowercase bool, tabSize int) (string, error) {
+	if sqlStr == "" {
+		return "", nil
+	}
+
+	params := types.DocumentFormattingParams{
+		Options: types.FormattingOptions{
+			TabSize:      float64(tabSize),
+			InsertSpaces: true,
+		},
+	}
+	if tabSize == 0 {
+		params.Options.TabSize = 4
+	}
+
+	cfg := &config.Config{
+		LowercaseKeywords: lowercase,
+	}
+
+	edits, err := Format(sqlStr, params, cfg)
+	if err != nil {
+		return "", err
+	}
+
+	if len(edits) == 0 {
+		return sqlStr, nil
+	}
+
+	return edits[0].NewText, nil
+}
+
 type formatEnvironment struct {
 	reader      *astutil.NodeReader
 	indentLevel int
-	options     lsp.FormattingOptions
+	options     types.FormattingOptions
 	lastKeyword string // Track last processed keyword
 }
 
