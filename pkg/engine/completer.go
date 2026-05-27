@@ -206,9 +206,45 @@ func (c *Completer) Complete(text string, line, col int, lowercaseKeywords bool)
 	}
 
 	items = filterCandidates(items, lastWord)
+	if quote == 0 {
+		items = c.applyAutoQuoting(items)
+	}
 	populateSortText(items)
 
 	return items, nil
+}
+
+func (c *Completer) shouldQuote(label string) bool {
+	if len(label) == 0 {
+		return false
+	}
+	d := &dialect.GenericSQLDialect{}
+	if !d.IsIdentifierStart(rune(label[0])) {
+		return true
+	}
+	for _, r := range label {
+		if !d.IsIdentifierPart(r) {
+			return true
+		}
+	}
+	return false
+}
+
+func (c *Completer) applyAutoQuoting(items []types.CompletionItem) []types.CompletionItem {
+	quote := byte('"')
+	if c.Driver == dialect.DatabaseDriverPostgreSQL {
+		quote = '"'
+	}
+
+	for i := range items {
+		if items[i].Kind == types.KeywordCompletion || items[i].Kind == types.FunctionCompletion || items[i].Kind == types.SnippetCompletion {
+			continue
+		}
+		if c.shouldQuote(items[i].Label) {
+			items[i].Label = fmt.Sprintf("%c%s%c", quote, items[i].Label, quote)
+		}
+	}
+	return items
 }
 
 // Override the sort text for each completion item.
