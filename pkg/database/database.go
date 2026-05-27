@@ -10,6 +10,8 @@ import (
 
 	"github.com/balajz/pgxls/dialect"
 	"github.com/balajz/pgxls/parser/parseutil"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 var ErrNotImplementation error = errors.New("not implementation")
@@ -28,8 +30,8 @@ type DBRepository interface {
 	SchemaTables(ctx context.Context) (map[string][]string, error)
 	DescribeDatabaseTable(ctx context.Context) ([]*ColumnDesc, error)
 	DescribeDatabaseTableBySchema(ctx context.Context, schemaName string) ([]*ColumnDesc, error)
-	Exec(ctx context.Context, query string) (sql.Result, error)
-	Query(ctx context.Context, query string) (*sql.Rows, error)
+	Exec(ctx context.Context, query string) (pgconn.CommandTag, error)
+	Query(ctx context.Context, query string) (pgx.Rows, error)
 	DescribeForeignKeysBySchema(ctx context.Context, schemaName string) ([]*ForeignKey, error)
 }
 
@@ -178,7 +180,7 @@ func SubqueryColumnDoc(identName string, views []*parseutil.SubQueryView, dbCach
 	return buf.String()
 }
 
-func parseForeignKeys(rows *sql.Rows, schemaName string) ([]*ForeignKey, error) {
+func parseForeignKeys(rows pgx.Rows, schemaName string) ([]*ForeignKey, error) {
 	var retVal []*ForeignKey
 	var prevFk string
 	var cur *ForeignKey

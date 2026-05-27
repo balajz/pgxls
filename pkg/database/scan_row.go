@@ -1,51 +1,48 @@
 package database
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/jackc/pgx/v5"
 )
 
-func Columns(rows *sql.Rows) ([]string, error) {
-	var cols []string
-	var err error
+func Columns(rows pgx.Rows) ([]string, error) {
+	fields := rows.FieldDescriptions()
+	cols := make([]string, len(fields))
 
-	cols, err = rows.Columns()
-	if err != nil {
-		return nil, fmt.Errorf("cannot get query columns, %w", err)
-	}
-
-	for i, c := range cols {
+	for i, f := range fields {
+		c := f.Name
 		if strings.TrimSpace(c) == "" {
-			cols[i] = fmt.Sprintf("col%d", i)
+			c = fmt.Sprintf("col%d", i)
 		}
+		cols[i] = c
 	}
 
 	return cols, nil
 }
 
-func ScanRows(rows *sql.Rows, columnLength int) ([][]string, error) {
+func ScanRows(rows pgx.Rows, columnLength int) ([][]string, error) {
 	stringRows := [][]string{}
 	for rows.Next() {
-		// scan to []interface{}
-		rowBuffer := make([]interface{}, columnLength)
-		for i := range rowBuffer {
-			rowBuffer[i] = new(interface{})
-		}
-		if err := rows.Scan(rowBuffer...); err != nil {
+		values, err := rows.Values()
+		if err != nil {
 			return nil, err
 		}
 
 		stringRow := make([]string, columnLength)
-		for i, buf := range rowBuffer {
-			val, err := sqlValToString(buf)
+		for i, val := range values {
+			if i >= columnLength {
+				break
+			}
+			s, err := sqlValToString(val)
 			if err != nil {
 				return nil, err
 			}
-			stringRow[i] = val
+			stringRow[i] = s
 		}
 		stringRows = append(stringRows, stringRow)
 	}
@@ -55,13 +52,11 @@ func ScanRows(rows *sql.Rows, columnLength int) ([][]string, error) {
 	return stringRows, nil
 }
 
-func sqlValToString(pointer interface{}) (string, error) {
+func sqlValToString(val interface{}) (string, error) {
 	res := ""
-	if pointer == nil {
+	if val == nil {
 		return res, nil
 	}
-
-	val := *pointer.(*interface{})
 
 	reflectVal := reflect.ValueOf(val)
 

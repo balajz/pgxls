@@ -1,10 +1,11 @@
 package database
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
 
 	"github.com/balajz/pgxls/dialect"
+	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -15,11 +16,11 @@ var (
 
 type (
 	Opener  func(*DBConfig) (*DBConnection, error)
-	Factory func(*sql.DB) DBRepository
+	Factory func(*pgx.Conn) DBRepository
 )
 
 type DBConnection struct {
-	Conn    *sql.DB
+	Conn    *pgx.Conn
 	SSHConn *ssh.Client
 	Driver  dialect.DatabaseDriver
 }
@@ -28,7 +29,7 @@ func (db *DBConnection) Close() error {
 	if db == nil {
 		return nil
 	}
-	if err := db.Conn.Close(); err != nil {
+	if err := db.Conn.Close(context.Background()); err != nil {
 		return err
 	}
 	if db.SSHConn != nil {
@@ -67,7 +68,7 @@ func Open(cfg *DBConfig) (*DBConnection, error) {
 	return OpenFn(cfg)
 }
 
-func CreateRepository(driver dialect.DatabaseDriver, db *sql.DB) (DBRepository, error) {
+func CreateRepository(driver dialect.DatabaseDriver, db *pgx.Conn) (DBRepository, error) {
 	FactoryFn, ok := driverFactories[driver]
 	if !ok {
 		return nil, fmt.Errorf("driver not found, %s", driver)

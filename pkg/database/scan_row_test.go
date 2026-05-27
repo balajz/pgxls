@@ -1,24 +1,22 @@
 package database
 
 import (
-	"context"
-	"database/sql"
-	"database/sql/driver"
 	"errors"
-	"io"
-	"sync"
 	"testing"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 func TestScanRows_returnsRowsErr(t *testing.T) {
-	db := openScanRowsTestDB(t)
-	defer db.Close()
-
-	rows, err := db.QueryContext(context.Background(), "SELECT 1")
-	if err != nil {
-		t.Fatalf("QueryContext() error = %v", err)
+	errScanRowsTest := errors.New("scan rows test error")
+	rows := &scanRowsTestRows{
+		fields: []pgconn.FieldDescription{{Name: "value"}},
+		data: [][]any{
+			{"ok"},
+		},
+		errAfter: errScanRowsTest,
 	}
-	defer rows.Close()
 
 	columns, err := Columns(rows)
 	if err != nil {
@@ -32,13 +30,10 @@ func TestScanRows_returnsRowsErr(t *testing.T) {
 }
 
 func Test_sqlValToString_nilTypedPointer(t *testing.T) {
-	// Regression test: a typed nil pointer (e.g. (*string)(nil)) stored in
-	// interface{} should return empty string, not panic.
 	var s *string
 	var iface interface{} = s
-	pointer := &iface
 
-	got, err := sqlValToString(pointer)
+	got, err := sqlValToString(iface)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -60,9 +55,8 @@ func Test_sqlValToString_nilInterface(t *testing.T) {
 func Test_sqlValToString_validPointer(t *testing.T) {
 	s := "hello"
 	var iface interface{} = &s
-	pointer := &iface
 
-	got, err := sqlValToString(pointer)
+	got, err := sqlValToString(iface)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -71,71 +65,56 @@ func Test_sqlValToString_validPointer(t *testing.T) {
 	}
 }
 
-var (
-	registerScanRowsTestDriverOnce sync.Once
-	errScanRowsTest                = errors.New("scan rows test error")
-)
-
-func openScanRowsTestDB(t *testing.T) *sql.DB {
-	t.Helper()
-
-	registerScanRowsTestDriverOnce.Do(func() {
-		sql.Register("scan_rows_test", scanRowsTestDriver{})
-	})
-
-	db, err := sql.Open("scan_rows_test", "")
-	if err != nil {
-		t.Fatalf("sql.Open() error = %v", err)
-	}
-	return db
-}
-
-type scanRowsTestDriver struct{}
-
-func (scanRowsTestDriver) Open(string) (driver.Conn, error) {
-	return scanRowsTestConn{}, nil
-}
-
-type scanRowsTestConn struct{}
-
-func (scanRowsTestConn) Prepare(string) (driver.Stmt, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (scanRowsTestConn) Close() error {
-	return nil
-}
-
-func (scanRowsTestConn) Begin() (driver.Tx, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (scanRowsTestConn) QueryContext(context.Context, string, []driver.NamedValue) (driver.Rows, error) {
-	return &scanRowsTestRows{}, nil
-}
-
 type scanRowsTestRows struct {
-	calls int
+	fields   []pgconn.FieldDescription
+	data     [][]any
+	errAfter error
+	curr     int
+	closed   bool
 }
 
-func (r *scanRowsTestRows) Columns() []string {
-	return []string{"value"}
+func (r *scanRowsTestRows) Close() {
+	r.closed = true
 }
 
-func (r *scanRowsTestRows) Close() error {
+func (r *scanRowsTestRows) Err() error {
+	if r.curr >= len(r.data) {
+		return r.errAfter
+	}
 	return nil
 }
 
-func (r *scanRowsTestRows) Next(dest []driver.Value) error {
-	switch r.calls {
-	case 0:
-		dest[0] = "ok"
-		r.calls++
-		return nil
-	case 1:
-		r.calls++
-		return errScanRowsTest
-	default:
-		return io.EOF
+func (r *scanRowsTestRows) CommandTag() pgconn.CommandTag {
+	return pgconn.CommandTag{}
+}
+
+func (r *scanRowsTestRows) FieldDescriptions() []pgconn.FieldDescription {
+	return r.fields
+}
+
+func (r *scanRowsTestRows) Next() bool {
+	if r.curr < len(r.data) {
+		r.curr++
+		return true
 	}
+	return false
+}
+
+func (r *scanRowsTestRows) Scan(dest ...any) error {
+	return nil
+}
+
+func (r *scanRowsTestRows) Values() ([]any, error) {
+	if r.curr > 0 && r.curr <= len(r.data) {
+		return r.data[r.curr-1], nil
+	}
+	return nil, errors.New("no more rows")
+}
+
+func (r *scanRowsTestRows) RawValues() [][]byte {
+	return nil
+}
+
+func (r *scanRowsTestRows) Conn() *pgx.Conn {
+	return nil
 }

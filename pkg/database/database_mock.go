@@ -5,6 +5,8 @@ import (
 	"database/sql"
 
 	"github.com/balajz/pgxls/dialect"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type MockDBRepository struct {
@@ -15,12 +17,12 @@ type MockDBRepository struct {
 	MockDescribeTable                 func(context.Context, string) ([]*ColumnDesc, error)
 	MockDescribeDatabaseTable         func(context.Context) ([]*ColumnDesc, error)
 	MockDescribeDatabaseTableBySchema func(context.Context, string) ([]*ColumnDesc, error)
-	MockExec                          func(context.Context, string) (sql.Result, error)
-	MockQuery                         func(context.Context, string) (*sql.Rows, error)
+	MockExec                          func(context.Context, string) (pgconn.CommandTag, error)
+	MockQuery                         func(context.Context, string) (pgx.Rows, error)
 	MockDescribeForeignKeysBySchema   func(context.Context, string) ([]*ForeignKey, error)
 }
 
-func NewMockDBRepository(_ *sql.DB) DBRepository {
+func NewMockDBRepository(_ *pgx.Conn) DBRepository {
 	return &MockDBRepository{
 		MockDatabase:       func(ctx context.Context) (string, error) { return "world", nil },
 		MockDatabases:      func(ctx context.Context) ([]string, error) { return dummyDatabases, nil },
@@ -51,14 +53,11 @@ func NewMockDBRepository(_ *sql.DB) DBRepository {
 			res = append(res, dummyCountryLanguageColumns...)
 			return res, nil
 		},
-		MockExec: func(ctx context.Context, query string) (sql.Result, error) {
-			return &MockResult{
-				MockLastInsertID: func() (int64, error) { return 11, nil },
-				MockRowsAffected: func() (int64, error) { return 22, nil },
-			}, nil
+		MockExec: func(ctx context.Context, query string) (pgconn.CommandTag, error) {
+			return pgconn.NewCommandTag("SELECT 1"), nil
 		},
-		MockQuery: func(ctx context.Context, query string) (*sql.Rows, error) {
-			return &sql.Rows{}, nil
+		MockQuery: func(ctx context.Context, query string) (pgx.Rows, error) {
+			return &MockRows{}, nil
 		},
 		MockDescribeForeignKeysBySchema: func(ctx context.Context, schemaName string) ([]*ForeignKey, error) {
 			return foreignKeys, nil
@@ -102,11 +101,11 @@ func (m *MockDBRepository) DescribeDatabaseTableBySchema(ctx context.Context, sc
 	return m.MockDescribeDatabaseTableBySchema(ctx, schemaName)
 }
 
-func (m *MockDBRepository) Exec(ctx context.Context, query string) (sql.Result, error) {
+func (m *MockDBRepository) Exec(ctx context.Context, query string) (pgconn.CommandTag, error) {
 	return m.MockExec(ctx, query)
 }
 
-func (m *MockDBRepository) Query(ctx context.Context, query string) (*sql.Rows, error) {
+func (m *MockDBRepository) Query(ctx context.Context, query string) (pgx.Rows, error) {
 	return m.MockQuery(ctx, query)
 }
 
@@ -536,18 +535,17 @@ var foreignKeys = []*ForeignKey{
 	},
 }
 
-type MockResult struct {
-	MockLastInsertID func() (int64, error)
-	MockRowsAffected func() (int64, error)
-}
+type MockRows struct{}
 
-func (m *MockResult) LastInsertId() (int64, error) {
-	return m.MockLastInsertID()
-}
-
-func (m *MockResult) RowsAffected() (int64, error) {
-	return m.MockRowsAffected()
-}
+func (m *MockRows) Close()                                       {}
+func (m *MockRows) Err() error                                   { return nil }
+func (m *MockRows) CommandTag() pgconn.CommandTag                { return pgconn.CommandTag{} }
+func (m *MockRows) FieldDescriptions() []pgconn.FieldDescription { return nil }
+func (m *MockRows) Next() bool                                   { return false }
+func (m *MockRows) Scan(dest ...any) error                       { return nil }
+func (m *MockRows) Values() ([]any, error)                       { return nil, nil }
+func (m *MockRows) RawValues() [][]byte                          { return nil }
+func (m *MockRows) Conn() *pgx.Conn                              { return nil }
 
 func init() {
 	RegisterOpen("mock", func(connCfg *DBConfig) (*DBConnection, error) { return &DBConnection{}, nil })

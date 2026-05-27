@@ -2,9 +2,7 @@ package database
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
-	"log"
 	"net"
 	"net/url"
 	"sort"
@@ -13,7 +11,7 @@ import (
 
 	"github.com/balajz/pgxls/dialect"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/jackc/pgx/v5/pgconn"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -24,8 +22,9 @@ func init() {
 
 func postgreSQLOpen(dbConnCfg *DBConfig) (*DBConnection, error) {
 	var (
-		conn    *sql.DB
+		conn    *pgx.Conn
 		sshConn *ssh.Client
+		err     error
 	)
 	dsn, err := genPostgresConfig(dbConnCfg)
 	if err != nil {
@@ -40,18 +39,15 @@ func postgreSQLOpen(dbConnCfg *DBConfig) (*DBConnection, error) {
 		conn = dbConn
 		sshConn = dbSSHConn
 	} else {
-		dbConn, err := sql.Open("pgx", dsn)
+		dbConn, err := pgx.Connect(context.Background(), dsn)
 		if err != nil {
 			return nil, err
 		}
 		conn = dbConn
 	}
-	if err = conn.PingContext(context.Background()); err != nil {
+	if err = conn.Ping(context.Background()); err != nil {
 		return nil, err
 	}
-
-	conn.SetMaxIdleConns(DefaultMaxIdleConns)
-	conn.SetMaxOpenConns(DefaultMaxOpenConns)
 
 	return &DBConnection{
 		Conn:    conn,
@@ -59,7 +55,7 @@ func postgreSQLOpen(dbConnCfg *DBConfig) (*DBConnection, error) {
 	}, nil
 }
 
-func openPostgreSQLViaSSH(dsn string, sshCfg *SSHConfig) (*sql.DB, *ssh.Client, error) {
+func openPostgreSQLViaSSH(dsn string, sshCfg *SSHConfig) (*pgx.Conn, *ssh.Client, error) {
 	sshConfig, err := sshCfg.ClientConfig()
 	if err != nil {
 		return nil, nil, err
@@ -77,16 +73,19 @@ func openPostgreSQLViaSSH(dsn string, sshCfg *SSHConfig) (*sql.DB, *ssh.Client, 
 		return sshConn.Dial(network, addr)
 	}
 
-	conn := stdlib.OpenDB(*conf)
+	conn, err := pgx.ConnectConfig(context.Background(), conf)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	return conn, sshConn, nil
 }
 
 type PostgreSQLDBRepository struct {
-	Conn *sql.DB
+	Conn *pgx.Conn
 }
 
-func NewPostgreSQLDBRepository(conn *sql.DB) DBRepository {
+func NewPostgreSQLDBRepository(conn *pgx.Conn) DBRepository {
 	return &PostgreSQLDBRepository{Conn: conn}
 }
 
@@ -95,7 +94,7 @@ func (db *PostgreSQLDBRepository) Driver() dialect.DatabaseDriver {
 }
 
 func (db *PostgreSQLDBRepository) CurrentDatabase(ctx context.Context) (string, error) {
-	row := db.Conn.QueryRowContext(ctx, "SELECT current_database()")
+	row := db.Conn.QueryRow(ctx, "SELECT current_database()")
 	var database string
 	if err := row.Scan(&database); err != nil {
 		return "", err
@@ -104,13 +103,13 @@ func (db *PostgreSQLDBRepository) CurrentDatabase(ctx context.Context) (string, 
 }
 
 func (db *PostgreSQLDBRepository) Databases(ctx context.Context) ([]string, error) {
-	rows, err := db.Conn.QueryContext(
+	rows, err := db.Conn.Query(
 		ctx,
 		`
 	SELECT datname FROM pg_database
 	`)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	defer rows.Close()
 	databases := []string{}
@@ -125,25 +124,25 @@ func (db *PostgreSQLDBRepository) Databases(ctx context.Context) ([]string, erro
 }
 
 func (db *PostgreSQLDBRepository) CurrentSchema(ctx context.Context) (string, error) {
-	row := db.Conn.QueryRowContext(ctx, "SELECT current_schema()")
-	var database sql.NullString
+	row := db.Conn.QueryRow(ctx, "SELECT current_schema()")
+	var database *string
 	if err := row.Scan(&database); err != nil {
 		return "", err
 	}
-	if database.Valid {
-		return database.String, nil
+	if database != nil {
+		return *database, nil
 	}
 	return "", nil
 }
 
 func (db *PostgreSQLDBRepository) Schemas(ctx context.Context) ([]string, error) {
-	rows, err := db.Conn.QueryContext(
+	rows, err := db.Conn.Query(
 		ctx,
 		`
 	SELECT schema_name FROM information_schema.schemata
 	`)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	defer rows.Close()
 	databases := []string{}
@@ -158,7 +157,7 @@ func (db *PostgreSQLDBRepository) Schemas(ctx context.Context) ([]string, error)
 }
 
 func (db *PostgreSQLDBRepository) SchemaTables(ctx context.Context) (map[string][]string, error) {
-	rows, err := db.Conn.QueryContext(
+	rows, err := db.Conn.Query(
 		ctx,
 		`
 	SELECT
@@ -191,7 +190,7 @@ func (db *PostgreSQLDBRepository) SchemaTables(ctx context.Context) (map[string]
 }
 
 func (db *PostgreSQLDBRepository) Tables(ctx context.Context) ([]string, error) {
-	rows, err := db.Conn.QueryContext(
+	rows, err := db.Conn.Query(
 		ctx,
 		`
 	SELECT
@@ -205,7 +204,7 @@ func (db *PostgreSQLDBRepository) Tables(ctx context.Context) ([]string, error) 
 	  table_name
 	`)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	defer rows.Close()
 	tables := []string{}
@@ -220,7 +219,7 @@ func (db *PostgreSQLDBRepository) Tables(ctx context.Context) ([]string, error) 
 }
 
 func (db *PostgreSQLDBRepository) DescribeDatabaseTable(ctx context.Context) ([]*ColumnDesc, error) {
-	rows, err := db.Conn.QueryContext(
+	rows, err := db.Conn.Query(
 		ctx,
 		`
 	SELECT
@@ -259,7 +258,7 @@ func (db *PostgreSQLDBRepository) DescribeDatabaseTable(ctx context.Context) ([]
 		c.ordinal_position
 	`)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	defer rows.Close()
 	tableInfos := []*ColumnDesc{}
@@ -284,7 +283,7 @@ func (db *PostgreSQLDBRepository) DescribeDatabaseTable(ctx context.Context) ([]
 }
 
 func (db *PostgreSQLDBRepository) DescribeDatabaseTableBySchema(ctx context.Context, schemaName string) ([]*ColumnDesc, error) {
-	rows, err := db.Conn.QueryContext(
+	rows, err := db.Conn.Query(
 		ctx,
 		`
 	SELECT
@@ -326,7 +325,7 @@ func (db *PostgreSQLDBRepository) DescribeDatabaseTableBySchema(ctx context.Cont
 		c.ordinal_position
 	`, schemaName, schemaName)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	defer rows.Close()
 	tableInfos := []*ColumnDesc{}
@@ -351,7 +350,7 @@ func (db *PostgreSQLDBRepository) DescribeDatabaseTableBySchema(ctx context.Cont
 }
 
 func (db *PostgreSQLDBRepository) DescribeForeignKeysBySchema(ctx context.Context, schemaName string) ([]*ForeignKey, error) {
-	rows, err := db.Conn.QueryContext(
+	rows, err := db.Conn.Query(
 		ctx,
 		`
 	select kcu.CONSTRAINT_NAME,
@@ -376,18 +375,18 @@ func (db *PostgreSQLDBRepository) DescribeForeignKeysBySchema(ctx context.Contex
 			 kcu.ORDINAL_POSITION
 		`, schemaName)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	defer func() { _ = rows.Close() }()
+	defer func() { rows.Close() }()
 	return parseForeignKeys(rows, schemaName)
 }
 
-func (db *PostgreSQLDBRepository) Exec(ctx context.Context, query string) (sql.Result, error) {
-	return db.Conn.ExecContext(ctx, query)
+func (db *PostgreSQLDBRepository) Exec(ctx context.Context, query string) (pgconn.CommandTag, error) {
+	return db.Conn.Exec(ctx, query)
 }
 
-func (db *PostgreSQLDBRepository) Query(ctx context.Context, query string) (*sql.Rows, error) {
-	return db.Conn.QueryContext(ctx, query)
+func (db *PostgreSQLDBRepository) Query(ctx context.Context, query string) (pgx.Rows, error) {
+	return db.Conn.Query(ctx, query)
 }
 
 func genPostgresConfig(connCfg *DBConfig) (string, error) {
