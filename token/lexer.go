@@ -466,9 +466,6 @@ func (t *Tokenizer) tokenizeDelimitedIdentifier(r rune) *SQLWord {
 			break
 		}
 		s = append(s, n)
-		if t.Scanner.Peek() == ' ' {
-			break
-		}
 	}
 
 	if isClosed {

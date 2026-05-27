@@ -109,7 +109,12 @@ func (c *Completer) Complete(text string, line, col int, lowercaseKeywords bool)
 	}
 
 	lastWord := getLastWord(text, line+1, col)
-	withBackQuote := strings.HasPrefix(lastWord, "`")
+	var quote byte
+	if strings.HasPrefix(lastWord, "`") {
+		quote = '`'
+	} else if strings.HasPrefix(lastWord, "\"") {
+		quote = '"'
+	}
 
 	if ctx.syntaxPos == parseutil.TableReference && strings.HasPrefix(strings.ToUpper(lastWord), "WH") {
 		ctx.types = []completionType{
@@ -129,15 +134,15 @@ func (c *Completer) Complete(text string, line, col int, lowercaseKeywords bool)
 	if c.DBCache != nil {
 		if completionTypeIs(ctx.types, CompletionTypeColumn) {
 			candidates := c.columnCandidates(definedTables, ctx.parent)
-			if withBackQuote {
-				candidates = toQuotedCandidates(candidates, c.Driver)
+			if quote != 0 {
+				candidates = toQuotedCandidates(candidates, quote)
 			}
 			items = append(items, candidates...)
 		}
 		if completionTypeIs(ctx.types, CompletionTypeReferencedTable) {
 			candidates := c.ReferencedTableCandidates(definedTables)
-			if withBackQuote {
-				candidates = toQuotedCandidates(candidates, c.Driver)
+			if quote != 0 {
+				candidates = toQuotedCandidates(candidates, quote)
 			}
 			items = append(items, candidates...)
 		}
@@ -147,29 +152,29 @@ func (c *Completer) Complete(text string, line, col int, lowercaseKeywords bool)
 				excl = nil
 			}
 			candidates := c.TableCandidates(ctx.parent, excl)
-			if withBackQuote {
-				candidates = toQuotedCandidates(candidates, c.Driver)
+			if quote != 0 {
+				candidates = toQuotedCandidates(candidates, quote)
 			}
 			items = append(items, candidates...)
 		}
 		if completionTypeIs(ctx.types, CompletionTypeSchema) {
 			candidates := c.SchemaCandidates()
-			if withBackQuote {
-				candidates = toQuotedCandidates(candidates, c.Driver)
+			if quote != 0 {
+				candidates = toQuotedCandidates(candidates, quote)
 			}
 			items = append(items, candidates...)
 		}
 		if completionTypeIs(ctx.types, CompletionTypeSubQuery) {
 			candidates := c.SubQueryCandidates(definedSubQueries)
-			if withBackQuote {
-				candidates = toQuotedCandidates(candidates, c.Driver)
+			if quote != 0 {
+				candidates = toQuotedCandidates(candidates, quote)
 			}
 			items = append(items, candidates...)
 		}
 		if completionTypeIs(ctx.types, CompletionTypeSubQueryColumn) {
 			candidates := c.SubQueryColumnCandidates(definedSubQueries)
-			if withBackQuote {
-				candidates = toQuotedCandidates(candidates, c.Driver)
+			if quote != 0 {
+				candidates = toQuotedCandidates(candidates, quote)
 			}
 			items = append(items, candidates...)
 		}
@@ -184,8 +189,8 @@ func (c *Completer) Complete(text string, line, col int, lowercaseKeywords bool)
 				return nil, err
 			}
 			candidates := c.joinCandidates(table, tables, definedTables, joinOn, lowercaseKeywords)
-			if withBackQuote {
-				candidates = toQuotedCandidates(candidates, c.Driver)
+			if quote != 0 {
+				candidates = toQuotedCandidates(candidates, quote)
 			}
 			items = append(candidates, items...)
 		}
@@ -450,7 +455,7 @@ func getLastWord(text string, line, char int) string {
 	t := getBeforeCursorText(text, line, char)
 	s := getLine(t, line)
 
-	reg := regexp.MustCompile("[\\w`]+$")
+	reg := regexp.MustCompile("(\"[^\"]*|`[^`]*|[\\w]+)$")
 	ss := reg.FindAllString(s, -1)
 	if len(ss) == 0 {
 		return ""
@@ -475,10 +480,10 @@ func getBeforeCursorText(text string, line, char int) string {
 	return writer.String()
 }
 
-func toQuotedCandidates(candidates []types.CompletionItem, _ dialect.DatabaseDriver) []types.CompletionItem {
+func toQuotedCandidates(candidates []types.CompletionItem, quote byte) []types.CompletionItem {
 	quotedCandidates := make([]types.CompletionItem, len(candidates))
 	for i, candidate := range candidates {
-		candidate.Label = fmt.Sprintf("\"%s\"", candidate.Label)
+		candidate.Label = fmt.Sprintf("%c%s%c", quote, candidate.Label, quote)
 		quotedCandidates[i] = candidate
 	}
 	return quotedCandidates
