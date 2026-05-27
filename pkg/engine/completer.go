@@ -424,8 +424,10 @@ func getCompletionTypes(nw *parseutil.NodeWalker) *CompletionContext {
 
 func filterCandidates(candidates []types.CompletionItem, lastWord string) []types.CompletionItem {
 	filtered := []types.CompletionItem{}
+	upperLastWord := strings.ToUpper(lastWord)
 	for _, candidate := range candidates {
-		if strings.HasPrefix(strings.ToUpper(candidate.Label), strings.ToUpper(lastWord)) {
+		upperLabel := strings.ToUpper(candidate.Label)
+		if strings.HasPrefix(upperLabel, upperLastWord) && upperLabel != upperLastWord {
 			filtered = append(filtered, candidate)
 		}
 	}
