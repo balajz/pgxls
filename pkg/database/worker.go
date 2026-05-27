@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"log"
 	"sync"
 )
 
@@ -42,20 +41,16 @@ func (w *Worker) setColumnCache(col map[string][]*ColumnDesc) {
 
 func (w *Worker) Start() {
 	go func() {
-		log.Println("db worker: start")
 		for {
 			select {
 			case <-w.done:
-				log.Println("db worker: done")
 				return
 			case <-w.update:
 				generator := NewDBCacheUpdater(w.dbRepo)
 				col, err := generator.GenerateDBCacheSecondary(context.Background())
 				if err != nil {
-					log.Println(err)
 				}
 				w.setColumnCache(col)
-				log.Println("db worker: Update db cache secondary complete")
 			}
 		}
 	}()
@@ -81,7 +76,6 @@ func (w *Worker) updateAllCache(ctx context.Context) error {
 		return err
 	}
 	w.setCache(cache)
-	log.Println("db worker: Update db cache primary complete")
 	return nil
 }
 
