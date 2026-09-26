@@ -7,6 +7,7 @@ import (
 	"github.com/balajz/pgxls/dialect"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type MockDBRepository struct {
@@ -546,6 +547,7 @@ func (m *MockRows) Scan(dest ...any) error                       { return nil }
 func (m *MockRows) Values() ([]any, error)                       { return nil, nil }
 func (m *MockRows) RawValues() [][]byte                          { return nil }
 func (m *MockRows) Conn() *pgx.Conn                              { return nil }
+func (m *MockRows) TypeMap() *pgtype.Map                         { return pgtype.NewMap() }
 
 func init() {
 	RegisterOpen("mock", func(connCfg *DBConfig) (*DBConnection, error) { return &DBConnection{}, nil })
