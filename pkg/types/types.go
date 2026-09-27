@@ -95,7 +95,7 @@ type DidOpenTextDocumentParams struct {
 
 type DidChangeTextDocumentParams struct {
 	TextDocument   VersionedTextDocumentIdentifier  `json:"textDocument"`
-	ContentChanges []TextDocumentContentChangeEvent `json:"contentChanges"`
+	ContentChanges []TextDocumentContentChangeEvent `json:"context"`
 }
 
 type VersionedTextDocumentIdentifier struct {
@@ -120,7 +120,7 @@ type DidCloseTextDocumentParams struct {
 
 type CompletionParams struct {
 	TextDocumentPositionParams
-	CompletionContext CompletionContext `json:"contentChanges"`
+	CompletionContext CompletionContext `json:"context"`
 }
 
 type CompletionContext struct {
