@@ -12,7 +12,7 @@ require (
 require (
 	charm.land/bubbletea/v2 v2.0.6
 	github.com/Balaji01-4D/bubbline v0.1.0
-	github.com/jackc/pgx/v5 v5.9.2
+	github.com/jackc/pgx/v5 v5.11.0
 	github.com/k0kubun/pp v3.0.1+incompatible
 )
 

@@ -6,6 +6,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func TestScanRows_returnsRowsErr(t *testing.T) {
@@ -117,4 +118,8 @@ func (r *scanRowsTestRows) RawValues() [][]byte {
 
 func (r *scanRowsTestRows) Conn() *pgx.Conn {
 	return nil
+}
+
+func (r *scanRowsTestRows) TypeMap() *pgtype.Map {
+	return pgtype.NewMap()
 }
